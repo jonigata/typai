@@ -26,7 +26,7 @@ import OpenAI from 'openai';
 import { queryAi, Tool } from 'typai';
 import * as t from 'io-ts';
 
-// Initialize OpenAI client
+// Initialize OpenAI client, and by changing the baseUrl, openrouter can also be used
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -154,7 +154,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the ISC License - see the LICENSE file for details.
 
 ## Support
 
