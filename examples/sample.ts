@@ -30,7 +30,7 @@ async function main() {
   try {
     const result = await queryAi(
       openai,
-      "gpt-4",
+      "gpt-3.5-turbo",
       "What's the weather like in Tokyo next Monday?",
       [weatherTool]
     );

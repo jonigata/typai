@@ -2,6 +2,7 @@ import * as t from 'io-ts';
 import OpenAI from 'openai';
 import { generateSchema } from './generateJsonSchema';
 import json5 from 'json5';
+import { isRight } from 'fp-ts/lib/Either';
 
 type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
 
@@ -58,14 +59,21 @@ export async function queryAi<T>(
     const atool = tools.find(x => f.name == x.name);
     if (atool != null) {
       const parsedParameters = json5.parse(f.arguments);
-      const toolCall: ToolCall<T> = {
-        tool: atool,
-        parameters: parsedParameters,
-      };
-      // console.warn("succeeded, ", toolCall);
-      return toolCall;
+      const decodedResult = atool.parameters.decode(parsedParameters);
+      
+      if (isRight(decodedResult)) {
+        const toolCall: ToolCall<T> = {
+          tool: atool,
+          parameters: decodedResult.right
+        };
+        // console.warn("succeeded, ", toolCall);
+        return toolCall;
+      } else {
+        // console.error("Parameter validation failed:", decodedResult.left);
+        throw new Error("Parameter validation failed");
+      }
     }
   }
-  console.error("================ Unexpected response: not tool_calls.")
+  // console.error("================ Unexpected response: not tool_calls.")
   throw new Error("not tool_calls")
 }
