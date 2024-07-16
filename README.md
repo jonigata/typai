@@ -159,7 +159,3 @@ This project is licensed under the ISC License - see the LICENSE file for detail
 ## Support
 
 If you encounter any problems or have any questions, please open an issue on the GitHub repository.
-
----
-
-Remember to update this README with your specific package details, usage instructions, and any other relevant information as your project evolves.
