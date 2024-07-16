@@ -1,12 +1,14 @@
-// sample.ts
 import 'dotenv/config';
 import OpenAI from 'openai';
 import * as t from 'io-ts';
-import { queryAi, type Tool } from '../dist/index.cjs.js';
+import { queryAi, Tool } from '../src';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
-});
+const openai = new OpenAI(
+  // Probably unnecessary if using process.env (should work even if removed)
+  {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+  });
 
 const tool: Tool<{ message: string }> = {
   name: 'Echo',
@@ -18,13 +20,13 @@ const tool: Tool<{ message: string }> = {
 
 const tools = [tool];
 
-const prompt = "Please echo back the following message: 'Hello, world!'";
+const prompt = "Please echo back the following message: 'Hello, Human!'";
 
-queryAi(openai, prompt, tools)
-  .then(result => {
-    console.log("Tool called:", result.tool.name);
-    console.log("Parameters:", result.parameters);
-  })
-  .catch(err => {
-    console.error("Error:", err);
-  });
+async function main() {
+  const result = await queryAi(openai, "anthropic/claude-3-haiku:beta", prompt, tools);
+  console.log("Tool called:", result.tool.name);
+  console.log("Parameters:", result.parameters);
+}
+
+main();
+

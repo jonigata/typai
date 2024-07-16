@@ -2,11 +2,19 @@
   "name": "typai",
   "version": "0.0.1",
   "description": "",
-  "main": "index.cjs.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "vite build",
-    "example": "tsc -p examples/tsconfig.examples.json && node examples/sample.js"
+    "build": "tsc",
+    "example": "npm run build && node dist/examples/sample.js"
   },
   "keywords": [],
   "author": "",
