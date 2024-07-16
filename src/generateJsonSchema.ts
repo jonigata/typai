@@ -5,17 +5,21 @@ import { annotate, AnnotatedType } from './AnnotatedType';
 export { annotate, AnnotatedType };
 
 export function generateJsonSchema(type: t.Type<any>): any {
-  const annotations = type instanceof AnnotatedType ? type.annotations : {};
-  
-  if (type instanceof t.InterfaceType) {
+  const annotations = 'annotations' in type ? (type as any).annotations : {};
+  if (type && typeof type === 'object' && 'props' in type && type.props && typeof type.props === 'object') {
     const properties: Record<string, any> = {};
-    for (const [key, prop] of Object.entries(type.props)) {
-      properties[key] = generateJsonSchema(prop as any);
+    
+    // Type assertion to assure TypeScript that type.props is a valid object
+    const props = type.props as Record<string, t.Type<any>>;
+    
+    for (const [key, prop] of Object.entries(props)) {
+      properties[key] = generateJsonSchema(prop);
     }
+    
     return {
       type: 'object',
       properties,
-      required: Object.keys(type.props),
+      required: Object.keys(props),
       ...annotations,
     };
   }

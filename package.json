@@ -1,6 +1,6 @@
 {
   "name": "typai",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -26,17 +26,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "io-ts": "^2.2.21",
+    "json5": "^2.2.3",
+    "openai": "^4.52.7"
+  },
+  "devDependencies": {
     "rimraf": "^6.0.1",
     "typescript": "^5.5.3",
     "vite": "^5.3.4",
-    "vite-plugin-dts": "^3.9.1"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "json5": "^2.2.3",
-    "openai": "^4.52.7",
-    "typai": "file:."    
+    "vite-plugin-dts": "^3.9.1",
+    "dotenv": "^16.4.5"
   }
 }
