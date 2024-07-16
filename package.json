@@ -1,0 +1,25 @@
+{
+  "name": "typai",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.cjs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build",
+    "example": "tsc -p examples/tsconfig.examples.json && node examples/sample.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "io-ts": "^2.2.21",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4",
+    "vite-plugin-dts": "^3.9.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "json5": "^2.2.3",
+    "openai": "^4.52.7"
+  }
+}
