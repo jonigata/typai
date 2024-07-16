@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "example": "npm run build && node dist/examples/sample.js"
+    "build": "tsc -b && tsc -b examples",
+    "example": "node dist/examples/sample.js"
   },
   "keywords": [],
   "author": "",

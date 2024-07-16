@@ -14,8 +14,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "composite": true
   },
-  "include": ["src/**/*", "examples/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts", "dist"]
 }
