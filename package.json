@@ -17,8 +17,11 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc",
-    "prepublishOnly": "npm run build"
+    "build:main": "tsc --build tsconfig.json",
+    "build:examples": "tsc --build examples/tsconfig.json",
+    "build": "npm run clean && npm run build:main && npm run build:examples",
+    "prepublishOnly": "npm run build",
+    "example": "npm run build && node dist/examples/sample.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +36,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "json5": "^2.2.3",
-    "openai": "^4.52.7"
+    "openai": "^4.52.7",
+    "typai": "file:."    
   }
 }

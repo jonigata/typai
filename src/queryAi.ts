@@ -59,6 +59,7 @@ export async function queryAi<T>(
     const atool = tools.find(x => f.name == x.name);
     if (atool != null) {
       const parsedParameters = json5.parse(f.arguments);
+      console.warn(parsedParameters);
       const decodedResult = atool.parameters.decode(parsedParameters);
       
       if (isRight(decodedResult)) {

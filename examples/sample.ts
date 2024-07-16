@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import OpenAI from 'openai';
-import { queryAi, Tool, annotate } from '../src';
+import { queryAi, Tool, annotate } from 'typai';
 import * as t from 'io-ts';
 
 

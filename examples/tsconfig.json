@@ -1,9 +1,18 @@
 {
-    "extends": "../tsconfig.json",
-    "compilerOptions": {
-      "rootDir": ".",
-      "outDir": "../dist/examples"
-    },
-    "include": ["./**/*.ts"],
-    "references": [{ "path": ".." }]
-  }
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../dist/examples",
+    "composite": true,
+    "noEmit": false,
+    "tsBuildInfoFile": "../dist/examples.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "typai": ["../dist"]
+    }
+  },
+  "include": ["./**/*.ts"],
+  "references": [
+    { "path": "../" }
+  ]
+}
