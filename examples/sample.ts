@@ -1,44 +1,88 @@
 import 'dotenv/config';
 import OpenAI from 'openai';
-import { queryAi, Tool, annotate } from 'typai';
+import { queryFormatted, Tool, annotate } from 'typai';
+import { dispatchQueryFormatted, handleToolCall } from 'typai';
 import * as t from 'io-ts';
-
 
 const openai = new OpenAI(
   // Probably unnecessary if using process.env (should work even if removed)
   {
-    apiKey: process.env.OPENAI_API_KEY || '',
-    baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+    apiKey: process.env.OPENAI_API_KEY ?? '',
+    baseURL: process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
   });
 
-const weatherTool: Tool<{ location: string, date: string }> = {
-  name: 'GetWeather',
-  description: 'Get the weather forecast for a specific location and date',
+const emotionTool: Tool<{ emotion: string }> = {
+  name: 'notifyEmotion',
+  description: 'Notify the emotion of a given text',
   parameters: t.type({
-    location: annotate(t.string, {
-      description: 'The city and state, e.g. San Francisco, CA',
-      examples: ['New York, NY', 'Los Angeles, CA']
-    }),
-    date: annotate(t.string, {
-      description: 'The date for the weather forecast in YYYY-MM-DD format',
-      examples: ['2023-05-15', '2024-01-01']
+    emotion: annotate(t.string, {
+      description: 'estimated emotion',
+      enum: ['happy', 'angry', 'sad']
     })
   })
 };
 
-async function main() {
+async function estimateEmotion() {
   try {
-    const result = await queryAi(
+    const result = await queryFormatted(
       openai,
-      "gpt-3.5-turbo",
-      "What's the weather like in Tokyo next Monday?",
-      [weatherTool]
+      process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+      "次の発言の感情を推定してください。「ちっとも涼しくならないですぅ💦」",
+      emotionTool
     );
     console.log("Tool called:", result.tool.name);
     console.log("Parameters:", result.parameters);
   } catch (error) {
-    console.error("Error:", error);
+    console.log(error);
   }
+}
+
+const useItemTool: Tool<{ item: string }> = {
+  name: 'useItem',
+  description: 'use an Item',
+  parameters: t.type({
+    item: t.string,
+  })
+};
+
+const walkToTool: Tool<{ direction: string }> = {
+  name: 'walkTo',
+  description: 'walk to direction',
+  parameters: t.type({
+    direction: annotate(t.string, {
+      description: 'estimated emotion',
+      enum: ['left', 'right', 'back']
+    }),
+  })
+};
+
+const tools = [useItemTool, walkToTool] as const;
+
+async function decideAction() {
+  try {
+    const result = await dispatchQueryFormatted(
+      openai,
+      process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+      "あなたはダンジョンの分かれ道にいます。次の行動を決定してください。",
+      ...tools
+    );
+
+    handleToolCall(
+      result, 
+      (params: { item: string }) => {
+        console.log("usedItemTool was called with parameters:", params);
+      },
+      (params: { direction: string }) => {
+        console.log("walkTool was called with parameters:", params);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function main() {
+  await estimateEmotion();
+  await decideAction();
 }
 
 main();
