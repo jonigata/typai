@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import path from 'path';
+import { configDefaults } from 'vitest/config';
 
 export default defineConfig({
   build: {
@@ -27,5 +28,10 @@ export default defineConfig({
       include: ['src'],
       outDir: 'dist',
     })
-  ]
+  ],
+  test: {
+    include: ['**/*.vitest.ts'],
+    exclude: [...configDefaults.exclude],
+    globals: true,
+  },
 });

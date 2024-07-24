@@ -21,7 +21,8 @@
     "build:examples": "tsc --build examples/tsconfig.json",
     "build": "npm run clean && npm run build:main && npm run build:examples",
     "prepublishOnly": "npm run build",
-    "example": "npm run build && node dist/examples/sample.js"
+    "example": "npm run build && node dist/examples/sample.js",
+    "vitest": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -29,7 +30,8 @@
   "dependencies": {
     "io-ts": "^2.2.21",
     "json5": "^2.2.3",
-    "openai": "^4.52.7"
+    "openai": "^4.52.7",
+    "vitest": "^2.0.4"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",

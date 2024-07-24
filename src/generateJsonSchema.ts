@@ -52,14 +52,52 @@ export function generateJsonSchema(type: t.Type<any>): any {
 }
 
 export function generateSchema(outputType: t.Type<any>, functionName: string, description: string): OpenAI.ChatCompletionTool {
-  // From the perspective of the user of generateSchema, the outputType
-  // becomes the inputType (parameters) of the function called by the AI.
+  const jsonSchema = generateJsonSchema(outputType);
+  
+  let parameters: any;
+  
+  if (jsonSchema.type === 'array') {
+    // If the top-level schema is an array, wrap it in an object
+    parameters = {
+      type: 'object',
+      properties: {
+        items: jsonSchema
+      },
+      required: ['items']
+    };
+  } else {
+    parameters = jsonSchema;
+  }
+
   return {
     type: "function",
     function: {
       name: functionName,
       description: description,
-      parameters: generateJsonSchema(outputType),
+      parameters: parameters,
     }
   };
+}
+
+export function wrapArraySchema(schema: any, type: t.Type<any>): any {
+  if (type instanceof t.ArrayType) {
+    return {
+      type: 'object',
+      properties: {
+        items: schema
+      },
+      required: ['items']
+    };
+  }
+  return schema;
+}
+
+export function unwrapArraySchema(schema: any, type: t.Type<any>): any {
+  if (type instanceof t.ArrayType && 
+      schema.type === 'object' && 
+      schema.properties && 
+      schema.properties.items) {
+    return schema.properties.items;
+  }
+  return schema;
 }
