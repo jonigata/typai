@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 import OpenAI from 'openai';
-import { generateSchema, unwrapArraySchema, wrapArraySchema,    } from './generateJsonSchema';
+import { generateSchema, wrapArraySchema, unwrapArrayData } from './generateJsonSchema';
 import json5 from 'json5';
 import { isRight } from 'fp-ts/lib/Either';
 import { UnexpectedResponseError, AINotFollowingInstructionsError } from './errors';
@@ -76,7 +76,7 @@ export async function queryFormatted<T>(
   const parsedParameters = json5.parse(f.arguments);
   // console.warn(parsedParameters);
   const decodedResult = tool.parameters.decode(
-    unwrapArraySchema(parsedParameters, tool.parameters));
+    unwrapArrayData(parsedParameters, tool.parameters));
   
   if (isRight(decodedResult)) {
     const toolCall: ToolCall<T> = {
@@ -86,7 +86,6 @@ export async function queryFormatted<T>(
     // console.warn("succeeded, ", toolCall);
     return toolCall;
   } else {
-    // console.error("Parameter validation failed:", decodedResult.left);
     throw new UnexpectedResponseError("Parameter validation failed");
   }
 }

@@ -80,9 +80,35 @@ async function decideAction() {
   }
 }
 
+const arrayRootTool: Tool<string[]> = {
+  name: 'selectItems',
+  description: 'Notify the selected items',
+  parameters: t.array(t.string)
+};
+
+
+async function rootArray() {
+  try {
+    const result = await queryFormatted(
+      openai,
+      process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+      `以下の中から、大きい順に3つ選んでください：
+      ["ぞう", "ねこ", "いぬ", "うさぎ", "ひつじ"]`, 
+      arrayRootTool
+    );
+    console.log("Tool called:", result.tool.name);
+    console.log("Parameters:", result.parameters);
+  } catch (error) {
+    console.log(error);
+  }
+
+
+}
+
 async function main() {
-  await estimateEmotion();
-  await decideAction();
+  // await estimateEmotion();
+  // await decideAction();
+  await rootArray();
 }
 
 main();

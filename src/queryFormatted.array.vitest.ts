@@ -25,7 +25,7 @@ describe('queryFormatted with array root tool', () => {
 
   // 成功ケース用のモック（正しい配列を返す）
   const successMockOpenAI = createMockOpenAI([
-    { function: { name: 'arrayRootTool', arguments: '["item1", "item2", "item3"]' } }
+    { function: { name: 'arrayRootTool', arguments: '{items: ["item1", "item2", "item3"]}' } }
   ]);
 
   // 失敗ケース用のモック（オブジェクトを返す）
@@ -35,7 +35,7 @@ describe('queryFormatted with array root tool', () => {
 
   // 空配列を返すケース用のモック
   const emptyArrayMockOpenAI = createMockOpenAI([
-    { function: { name: 'arrayRootTool', arguments: '[]' } }
+    { function: { name: 'arrayRootTool', arguments: '{items: []}' } }
   ]);
 
   it('should successfully call the tool and return the result with array input', async () => {
