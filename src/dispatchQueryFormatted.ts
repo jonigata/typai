@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { generateSchema } from './generateJsonSchema';
 import { isRight } from 'fp-ts/lib/Either';
 import json5 from 'json5';
-import { Tool, ToolCall } from './queryFormatted';  // 既存の型をインポート
+import { Tool, ToolCall } from './tools';
 import { UnexpectedResponseError, AINotFollowingInstructionsError } from './errors';
 
 type ToolCallWithIndex<T, I extends number> = ToolCall<T> & { toolIndex: I };

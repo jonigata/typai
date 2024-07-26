@@ -1,22 +1,11 @@
-import * as t from 'io-ts';
 import OpenAI from 'openai';
 import { generateSchema, wrapArraySchema, unwrapArrayData } from './generateJsonSchema';
 import json5 from 'json5';
-import { isRight } from 'fp-ts/lib/Either';
 import { UnexpectedResponseError, AINotFollowingInstructionsError } from './errors';
+import { Tool, ToolCall } from './tools';
+import { validateToolCall } from './errors';
 
 type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
-
-export type Tool<T=any> = {
-  name: string;
-  description: string;
-  parameters: t.Type<T>;
-}
-
-export type ToolCall<T> = {
-  tool: Tool<T>,
-  parameters: T
-}
 
 // オーバーロードシグネチャ
 export function queryFormatted<T>(
@@ -67,6 +56,7 @@ export async function queryFormatted<T>(
   if (!choice.message.tool_calls) {
     throw new AINotFollowingInstructionsError("tool_calls is not found");
   }
+  // console.warn("tool_calls", choice.message.tool_calls);
 
   const f = choice.message.tool_calls![0].function;
   if (tool.name !== f.name) {
@@ -77,15 +67,5 @@ export async function queryFormatted<T>(
   // console.warn(parsedParameters);
   const decodedResult = tool.parameters.decode(
     unwrapArrayData(parsedParameters, tool.parameters));
-  
-  if (isRight(decodedResult)) {
-    const toolCall: ToolCall<T> = {
-      tool: tool,
-      parameters: decodedResult.right
-    };
-    // console.warn("succeeded, ", toolCall);
-    return toolCall;
-  } else {
-    throw new UnexpectedResponseError("Parameter validation failed");
-  }
+  return validateToolCall(tool, parsedParameters, tool.parameters, decodedResult);
 }

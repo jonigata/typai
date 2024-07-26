@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { dispatchQueryFormatted, handleToolCall } from './dispatchQueryFormatted';
-import { Tool } from './queryFormatted';
+import { Tool } from './tools';
 import * as t from 'io-ts';
 import { AINotFollowingInstructionsError } from './errors';
 

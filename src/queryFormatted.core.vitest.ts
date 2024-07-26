@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { queryFormatted, Tool } from './queryFormatted';
+import { queryFormatted } from './queryFormatted';
+import { Tool } from './tools';
 import * as t from 'io-ts';
 import { UnexpectedResponseError, AINotFollowingInstructionsError } from './errors';
 import OpenAI from 'openai';
