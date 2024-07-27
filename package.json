@@ -1,6 +1,6 @@
 {
   "name": "typai",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -32,7 +32,7 @@
     "io-ts": "^2.2.21",
     "json5": "^2.2.3",
     "openai": "^4.52.7",
-    "snug-json": "^0.0.4"
+    "snug-json": "^0.0.6"
   },
   "devDependencies": {
     "@types/node": "^20.14.12",

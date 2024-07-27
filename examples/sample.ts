@@ -131,7 +131,8 @@ async function chooseNews() {
     openai,
     model,
     `子供が読んでも悪くないニュースを${newsChoiceCount}つ選んでください。目的は、会話を楽しく弾ませることであり、そのための共通話題としてのニュースのピックアップにあります。:\n${JSON.stringify(newsList)}`, 
-    newsChoiceTool
+    newsChoiceTool,
+    {verbose:{maxLength: Infinity, indent: 2}}
   );
   console.log(r.parameters);
 }

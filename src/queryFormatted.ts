@@ -4,9 +4,15 @@ import { typeAwareJsonParse, Json5ParseError } from './typeAwareJsonParse';
 import { UnexpectedResponseError, AINotFollowingInstructionsError } from './errors';
 import { Tool, ToolCall } from './tools';
 import { validateToolCall } from './errors';
+import { snugJSON, TruncateOptions } from 'snug-json';
 import colors from 'ansi-colors';
 
 type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
+
+interface Options {
+  verbose?: TruncateOptions;
+  verboseOnError?: TruncateOptions;
+}
 
 const useSampleMessage = false;
 // const useSampleMessage = true;
@@ -16,13 +22,15 @@ export function queryFormatted<T>(
   openai: OpenAI, 
   model: string,
   prompt: string, 
-  tool: Tool<T>
+  tool: Tool<T>,
+  options?: Options
 ): Promise<ToolCall<T>>;
 export function queryFormatted<T>(
   openai: OpenAI, 
   model: string,
   messages: ChatCompletionMessageParam[], 
-  tool: Tool<T>
+  tool: Tool<T>,
+  options?: Options
 ): Promise<ToolCall<T>>;
 
 // 実装
@@ -30,21 +38,32 @@ export async function queryFormatted<T>(
   openai: OpenAI,
   model: string,
   promptOrMessages: string | ChatCompletionMessageParam[],
-  tool: Tool<T>
+  tool: Tool<T>,
+  options?: Options
 ): Promise<ToolCall<T>> {
-  const messages: ChatCompletionMessageParam[] = typeof promptOrMessages === 'string'
+  options ??= {}
+  if (options.verboseOnError === undefined) options.verboseOnError = { maxLength: Infinity };
+
+  let messages: ChatCompletionMessageParam[] = typeof promptOrMessages === 'string'
     ? [{ role: "user", content: promptOrMessages }]
     : promptOrMessages;
 
   const originalParameters = tool.parameters;
   const wrapToolParameters = wrapArrayType(originalParameters);
 
+  let schema;
   let tool_calls;
   if (!useSampleMessage) {
-    const schema = generateSchema(
+    schema = generateSchema(
       wrapToolParameters,
       tool.name, 
       tool.description);
+
+    messages = [...messages, { role: "system", content: "At the end, call the provided tool." }];
+    if (options.verbose) {
+      console.info(`${colors.yellow('schema')}\n${snugJSON(schema, options.verbose)}`);
+      console.info(`${colors.yellow('prompt')}\n${snugJSON(messages, options.verbose)}`);
+    }
 
     const chatCompletion = await openai.chat.completions.create({
       messages: [...messages, { role: "system", content: "At the end, call the provided tool." }],
@@ -96,6 +115,11 @@ ${colors.red(`JSON parse error at .${e.path.join('.')}, This is an AI issue, not
 ${colors.yellow('Target text')}
 ${colors.gray(e.value)}
 `);
+    if (options.verboseOnError) {
+      console.info(`${colors.yellow('schema')}\n${snugJSON(schema, options.verboseOnError)}`);
+      console.info(`${colors.yellow('prompt')}\n${snugJSON(messages, options.verboseOnError)}`);
+    }
+
     throw e;      
   }  
   const unwrapParameterData = unwrapArrayData(parsedParameterData, originalParameters);
