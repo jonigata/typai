@@ -48,7 +48,7 @@ export async function queryFormatted<T>(
 
   const e = chatCompletion as any;
   if (e.error !== undefined) {
-    throw new UnexpectedResponseError(e.error.message);
+    throw new UnexpectedResponseError(e.error.message, []);
   }
 
   const choice = chatCompletion.choices[0];
@@ -64,8 +64,9 @@ export async function queryFormatted<T>(
   }
 
   const parsedParameters = json5.parse(f.arguments);
+  const unwrapParameters = unwrapArrayData(parsedParameters, tool.parameters);
   // console.warn(parsedParameters);
-  const decodedResult = tool.parameters.decode(
-    unwrapArrayData(parsedParameters, tool.parameters));
-  return validateToolCall(tool, parsedParameters, tool.parameters, decodedResult);
+  const decodedResult = tool.parameters.decode(unwrapParameters);
+    
+  return validateToolCall(tool, unwrapParameters, tool.parameters, decodedResult);
 }

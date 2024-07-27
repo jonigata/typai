@@ -52,7 +52,7 @@ export async function dispatchQueryFormatted(
 
   const e = chatCompletion as any;
   if (e.error !== undefined) {
-    throw new UnexpectedResponseError(e.error.message);
+    throw new UnexpectedResponseError(e.error.message, []);
   }
 
   const choice = chatCompletion.choices[0];

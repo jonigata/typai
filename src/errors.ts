@@ -2,6 +2,7 @@ import { isRight, Either } from 'fp-ts/lib/Either';
 import * as t from 'io-ts';
 import colors from 'ansi-colors';
 import { Tool, ToolCall } from './tools';
+import { snugJSON } from 'snug-json';
 
 export class TypaiError extends Error {
   constructor(message: string) {
@@ -11,8 +12,8 @@ export class TypaiError extends Error {
 }
 
 export class UnexpectedResponseError extends TypaiError {
-  constructor(public finishReason: string) {
-    super(`Unexpected response: finish_reason was "${finishReason}" instead of "tool_calls"`);
+  constructor(public finishReason: string, paths: string[]) {
+    super(`${finishReason}, paths: [${paths.join(', ')}]`);
     this.name = 'UnexpectedResponseError';
   }
 }
@@ -24,41 +25,59 @@ export class AINotFollowingInstructionsError extends TypaiError {
   }
 }
 
-function formatValue(value: unknown): string {
-  return typeof value === 'object'
-    ? JSON.stringify(value, null, 2)
-    : String(value);
+function getContextPath(context: t.Context): string[] { // ["", "foo", "bar"]
+  return context.map(({ key }) => key);
 }
 
-function getContextPath(context: t.Context): string {
-  return context.map(({ key, type }) => key).join('.');
+function getTypeAtPath(type: t.Type<any>, path: string[]): t.Type<any> {
+  let currentType: t.Type<any> = type;
+  for (const key of path.slice(1)) {
+    if (currentType instanceof t.InterfaceType || currentType instanceof t.PartialType) {
+      currentType = currentType.props[key];
+    } else if (currentType instanceof t.ArrayType && /^\d+$/.test(key)) {
+      currentType = currentType.type;
+    } else {
+      return currentType;  // 現在の型をそのまま返す
+    }
+    if (!currentType) {
+      return type;  // プロパティが見つからない場合は元の型を返す
+    }
+  }
+  return currentType;
 }
 
-function formatValidationErrors(errors: t.Errors): string {
-  return errors.map(error => {
-    const path = getContextPath(error.context);
-    const expectedType = error.context[error.context.length - 1].type.name;
-    const receivedValue = formatValue(error.value);
-    return `${path ? `${path}: ` : ''}Expected ${expectedType}, but received: ${receivedValue}`;
-  }).join('\n');
+function getTypeName(type: t.Type<any>): string {
+  if (type instanceof t.NumberType) return 'number';
+  if (type instanceof t.StringType) return 'string';
+  if (type instanceof t.BooleanType) return 'boolean';
+  if (type instanceof t.ArrayType) return 'array';
+  if (type instanceof t.InterfaceType || type instanceof t.PartialType) return 'object';
+  return type.name;  // その他の型の場合は型名をそのまま使用
 }
 
-function createErrorMessage(expected: t.Type<any>, received: unknown, errors: t.Errors): string {
-  const expectedType = expected.name;
-  const receivedValue = formatValue(received);
+function formatValidationErrors(errors: t.Errors, rootType: t.Type<any>): { message: string, paths: string[] } {
+  const message = colors.red('Error: Parameter validation failed\n') + errors.map(error => {
+    const pathArray = getContextPath(error.context);
+    const expectedType = getTypeAtPath(rootType, pathArray);
+    const formattedValue = snugJSON(error.value);
+    const expectedTypeName = getTypeName(expectedType);
+    // パスの先頭のドットを削除
+    const formattedPath = pathArray.join('.') || '.';
 
-  return `
-${colors.red('Error: Parameter validation failed')}
+    return `
+${colors.yellow('# Path:')} ${colors.gray(formattedPath)}
 
-${colors.green('Expected type:')}
-${colors.green(expectedType)}
+${colors.green('Expected type:')} ${colors.gray(expectedTypeName)}
 
-${colors.red('Received value:')}
-${colors.red(receivedValue)}
-
-${colors.yellow('Validation errors:')}
-${formatValidationErrors(errors)}
+${colors.red('Received type:')} ${colors.gray(typeof formattedValue)}
+${colors.red('Received value:')} ${colors.gray(formattedValue)}
 `;
+// ${colors.red('Received value:')} ${colors.gray(snugJSON(receivedValue, { maxLength: 60, oneLineLength: 60 }))}
+
+}).join();
+
+  const paths = errors.map(error => getContextPath(error.context).join('.') || '.');
+  return { message, paths };
 }
 
 export function validateToolCall<T>(
@@ -74,8 +93,8 @@ export function validateToolCall<T>(
     };
     return toolCall;
   } else {
-    const errorMessage = createErrorMessage(expectedType, parameters, decodedResult.left);
-    console.error(errorMessage);
-    throw new UnexpectedResponseError(`Parameter validation failed`);
+    const {message, paths} = formatValidationErrors(decodedResult.left, expectedType);
+    console.error(message);
+    throw new UnexpectedResponseError(`Parameter validation failed`, paths);
   }
 }
