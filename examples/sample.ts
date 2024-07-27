@@ -111,6 +111,7 @@ const newsList = [{"position":1,"title":"写真ニュース(1/1): 「野球が�
 const newsChoiceCount = 3;
 
 async function chooseNews() {
+  console.log("MODEL", model);
   const NewsItem = t.type({
     title: t.string,
     link: t.string,

@@ -64,24 +64,11 @@ export function generateSchema(outputType: t.Type<any>, functionName: string, de
   };
 }
 
-export function wrapArraySchema(schema: any, type: t.Type<any>): any {
+export function wrapArrayType(type: t.Type<any>): t.Type<any> {
   if (type instanceof t.ArrayType) {
-    return {
-      type: "function",
-      function: {
-        name: schema.function.name,
-        description: schema.function.description,
-        parameters: {
-          type: 'object',
-          properties: {
-            items: schema.function.parameters
-          },
-          required: ['items']
-        }
-      }
-    };
+    return t.type({ items: type.type });
   }
-  return schema;
+  return type;
 }
 
 export function unwrapArrayData(data: any, type: t.Type<any>): any {
