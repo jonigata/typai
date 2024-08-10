@@ -139,9 +139,9 @@ async function chooseNews() {
 
 
 async function main() {
-  //await estimateEmotion();
-  //await decideAction();
-  //await rootArray();
+  await estimateEmotion();
+  await decideAction();
+  await rootArray();
   await chooseNews();
 }
 

@@ -66,7 +66,7 @@ export function generateSchema(outputType: t.Type<any>, functionName: string, de
 
 export function wrapArrayType(type: t.Type<any>): t.Type<any> {
   if (type instanceof t.ArrayType) {
-    return t.type({ items: type.type });
+    return t.type({items: t.array(type.type)});
   }
   return type;
 }

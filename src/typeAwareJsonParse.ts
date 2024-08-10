@@ -1,5 +1,6 @@
 import * as t from 'io-ts'
 import json5 from 'json5';
+import { AnnotatedType } from './AnnotatedType';
 
 // typeがarrayなどのときに実際の値としてJSON文字列が渡された場合に、
 // 再帰的にJSON.parseして継続を試みる
@@ -16,6 +17,14 @@ export function typeAwareJsonParse<T>(
   type: t.Type<T>,
   path: string[] = []
 ): unknown {
+  // AnnotatedTypeの場合、アノテーションを処理し、内部の型で再帰的に処理する
+  if (type instanceof AnnotatedType) {
+    if (type.annotations.transform && typeof type.annotations.transform === 'function') {
+      value = type.annotations.transform(value);
+    }
+    return typeAwareJsonParse(value, type.baseType, path);
+  }
+
   // 文字列型の場合は、そのまま返す
   if (type instanceof t.StringType) {
     return value;

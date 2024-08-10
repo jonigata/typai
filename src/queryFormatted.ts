@@ -64,9 +64,10 @@ export async function queryFormatted<T>(
       console.info(`${colors.yellow('schema')}\n${snugJSON(schema, options.verbose)}`);
       console.info(`${colors.yellow('prompt')}\n${snugJSON(messages, options.verbose)}`);
     }
+    console.info(`${colors.yellow('schema')}\n${snugJSON(schema, {indent:2})}`);
 
     const chatCompletion = await openai.chat.completions.create({
-      messages: [...messages, { role: "system", content: "At the end, call the provided tool." }],
+      messages,
       model: model,
       tools: [schema],
       tool_choice: "required"
@@ -79,7 +80,6 @@ export async function queryFormatted<T>(
 
     const choice = chatCompletion.choices[0];
     tool_calls = choice.message.tool_calls;
-    // console.warn("queryAi RESULTS", choice);
 
     if (!tool_calls) {
       throw new AINotFollowingInstructionsError("tool_calls is not found");
