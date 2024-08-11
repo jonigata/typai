@@ -5,6 +5,11 @@ import { annotate, AnnotatedType } from './AnnotatedType';
 export { annotate, AnnotatedType };
 
 export function generateJsonSchema(type: t.Type<any>): any {
+  if (type instanceof AnnotatedType) {
+    const baseSchema = generateJsonSchema(type.baseType);
+    return { ...baseSchema, ...type.annotations };
+  }
+
   const annotations = 'annotations' in type ? (type as any).annotations : {};
   if (type && typeof type === 'object' && 'props' in type && type.props && typeof type.props === 'object') {
     const properties: Record<string, any> = {};

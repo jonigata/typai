@@ -137,12 +137,68 @@ async function chooseNews() {
   console.log(r.parameters);
 }
 
+// Character definition
+const Character = annotate(
+  t.type({
+    name: annotate(t.string, {description: "キャラクター名 (lang: Japanese)"}),
+    appearance: annotate(t.string, {description: "キャラクターの容姿。脇役のappearanceは簡潔にすること (lang: English)"}),
+  }),
+  {description: "キャラクター一覧。キャラクタードキュメントにない脇役も列挙しろ"},
+);
+type Character = t.TypeOf<typeof Character>;
+
+const Characters = t.array(Character);
+type Characters = t.TypeOf<typeof Characters>;
+
+const charactersTool: Tool<Characters> = {
+  name: "notifyCharacters",
+  description: "Notify the characters of the story",
+  parameters: Characters,
+};
+
+async function makeCharacter() {
+  const prompt = `
+# タスク
+
+与えられたテーマに沿って、
+そのテーマの中で活躍することになるマンガのキャラクターを設定しろ。
+
+# 詳細
+
+キャラクターの個性としては、ネガティヴなものを重視しろ。
+欠点のないキャラクターは好まれない。
+ただし、テーマがニュートラルならプロットはコメディに寄せるので、
+キャラクターの欠点も深刻にならないように。
+特に指定がない場合は女子にしろ。
+
+命名は具体的に、今風に。
+「山田太郎」「〇〇」のようなサンプル風の名前は禁じられている。
+
+# テーマ
+
+夜と懐中電灯と学校
+`;
+
+  const result = await queryFormatted(
+    openai,
+    model,
+    prompt,
+    charactersTool,
+    {verbsose: {
+      maxStringLength: 40,
+      indent: 2,
+      oneLineLength: 60,
+    }} as any);
+
+  console.log(result.parameters);
+}
 
 async function main() {
   await estimateEmotion();
   await decideAction();
   await rootArray();
   await chooseNews();
+  await makeCharacter();
 }
 
 main();
