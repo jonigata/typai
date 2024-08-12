@@ -1,6 +1,6 @@
 import * as t from 'io-ts'
 import json5 from 'json5';
-import { AnnotatedType } from './AnnotatedType';
+import { AnnotatedType, IgnoreType } from './AnnotatedType';
 
 // typeがarrayなどのときに実際の値としてJSON文字列が渡された場合に、
 // 再帰的にJSON.parseして継続を試みる
@@ -25,10 +25,16 @@ export function typeAwareJsonParse<T>(
     return typeAwareJsonParse(value, type.baseType, path);
   }
 
+  // IgnoreTypeの場合、undefinedを返す
+  if (type instanceof IgnoreType) {
+    return undefined;
+  }
+
   // 文字列型の場合は、そのまま返す
   if (type instanceof t.StringType) {
     return value;
   }
+
   // Union型の場合
   if (type instanceof t.UnionType) {
     // 文字列の場合、JSON解析を試みる
@@ -61,6 +67,7 @@ export function typeAwareJsonParse<T>(
     // どの型にも一致しない場合は元の値を返す
     return value;
   }
+
   // 文字列でJSONパースが必要な場合
   if (typeof value === 'string') {
     let parsed: unknown;
@@ -71,18 +78,27 @@ export function typeAwareJsonParse<T>(
     }
     return typeAwareJsonParse(parsed, type, path);
   }
+
   // オブジェクト型の場合
   if (type instanceof t.InterfaceType || type instanceof t.PartialType) {
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       return Object.entries(value).reduce((acc, [key, val]) => {
         const propType = type.props[key];
-        acc[key] = propType ? typeAwareJsonParse(val, propType, [...path, key]) : val;
+        if (propType) {
+          const parsedVal = typeAwareJsonParse(val, propType, [...path, key]);
+          if (parsedVal !== undefined) {
+            acc[key] = parsedVal;
+          }
+        } else {
+          acc[key] = val;
+        }
         return acc;
       }, {} as Record<string, unknown>);
     }
     // オブジェクトでない場合は元の値を返す
     return value;
   }
+
   // 配列型の場合
   if (type instanceof t.ArrayType) {
     if (Array.isArray(value)) {
@@ -91,6 +107,7 @@ export function typeAwareJsonParse<T>(
     // 配列でない場合は元の値を返す
     return value;
   }
+
   // その他の型の場合は、そのまま返す
   return value;
 }

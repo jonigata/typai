@@ -123,7 +123,6 @@ ${colors.gray(e.value)}
     throw e;      
   }  
   const unwrapParameterData = unwrapArrayData(parsedParameterData, originalParameters);
-  // console.warn(parsedParameters);
   const decodedResult = originalParameters.decode(unwrapParameterData);
     
   return validateToolCall(tool, unwrapParameterData, originalParameters, decodedResult);

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import OpenAI from 'openai';
-import { queryFormatted, Tool, annotate } from 'typai';
+import { queryFormatted, Tool, annotate, ignore } from 'typai';
 import { dispatchQueryFormatted, handleToolCall } from 'typai';
 import * as t from 'io-ts';
 
@@ -142,6 +142,7 @@ const Character = annotate(
   t.type({
     name: annotate(t.string, {description: "キャラクター名 (lang: Japanese)"}),
     appearance: annotate(t.string, {description: "キャラクターの容姿。脇役のappearanceは簡潔にすること (lang: English)"}),
+    favourite: ignore(t.string),
   }),
   {description: "キャラクター一覧。キャラクタードキュメントにない脇役も列挙しろ"},
 );
