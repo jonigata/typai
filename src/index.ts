@@ -3,6 +3,7 @@ import { queryFormatted } from './queryFormatted';
 import { generateSchema, annotate, AnnotatedType, ignore, IgnoreType } from './generateJsonSchema';
 import { dispatchQueryFormatted, handleToolCall } from './dispatchQueryFormatted';
 import { UnexpectedResponseError, AINotFollowingInstructionsError } from './errors';
+import { applyDefaultValues } from './applyDefaultValues';
 
 export { 
   queryFormatted,
@@ -16,5 +17,6 @@ export {
   Tool, 
   ToolCall, 
   UnexpectedResponseError, 
-  AINotFollowingInstructionsError 
+  AINotFollowingInstructionsError,
+  applyDefaultValues
 };
