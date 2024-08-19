@@ -19,7 +19,33 @@ export function annotate<A, O, I>(
   type: t.Type<A, O, I>,
   annotations: { [key: string]: any }
 ): AnnotatedType<A, O, I> {
-  return new AnnotatedType(type.name, type.is, type.validate, type.encode, type, annotations);
+  const hasDefault = 'default' in annotations;
+  const defaultValue = annotations.default;
+
+  return new AnnotatedType(
+    `${type.name} (annotated)`,
+    type.is,
+    (u, c) =>
+      pipe(
+        type.validate(u, c),
+        E.fold(
+          (errors) => {
+            if (hasDefault && (u === undefined || u === null)) {
+              return t.success(defaultValue);
+            } else if (type instanceof t.UnionType) {
+              // Union型の場合、元の検証エラーをそのまま返す
+              return t.failure(u, c, errors.map(e => e.message).join(', '));
+            } else {
+              return hasDefault ? t.success(defaultValue) : t.failure(u, c, errors.map(e => e.message).join(', '));
+            }
+          },
+          (a) => t.success(a)
+        )
+      ),
+    type.encode,
+    type,
+    annotations
+  );
 }
 
 export class IgnoreType<A, O> extends t.Type<A | undefined, O | undefined, unknown> {
