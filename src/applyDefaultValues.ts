@@ -1,4 +1,3 @@
-
 import * as t from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
@@ -40,7 +39,7 @@ export function applyDefaultValues(value: any, type: t.Type<any>): any {
         )
       );
       if (decoded !== null) {
-        return value; // Union型の場合、値が存在すれば変更しない
+        return applyDefaultValues(value, subType);
       }
     }
     // どのサブタイプにも一致しない場合、元の値を返す

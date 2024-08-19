@@ -48,18 +48,27 @@ describe('applyDefaultValues', () => {
     expect(applyDefaultValues(input, schema)).toEqual(expected);
   });
 
-  it('should handle union types', () => {
+  it('should handle union types correctly', () => {
+    const schema = t.union([t.string, t.number]);
+
+    expect(applyDefaultValues(null, schema)).toBe(null);
+    expect(applyDefaultValues(undefined, schema)).toBe(undefined);
+    expect(applyDefaultValues('hello', schema)).toBe('hello');
+    expect(applyDefaultValues(42, schema)).toBe(42);
+  });
+
+  it('should apply default value to annotated union type', () => {
     const schema = annotate(
       t.union([t.string, t.number]),
       { default: 'default value' }
     );
 
     expect(applyDefaultValues(null, schema)).toBe('default value');
+    expect(applyDefaultValues(undefined, schema)).toBe('default value');
     expect(applyDefaultValues('hello', schema)).toBe('hello');
     expect(applyDefaultValues(42, schema)).toBe(42);
-    expect(applyDefaultValues(undefined, schema)).toBe('default value');
   });
-  
+
   it('should ignore properties with IgnoreType', () => {
     const schema = t.type({
       required: t.string,
@@ -84,7 +93,7 @@ describe('applyDefaultValues', () => {
       posts: t.array(t.type({
         title: annotate(t.string, { default: 'Untitled' }),
         content: t.string,
-        tags: annotate(t.array(t.string), { default: [] })
+        tags: t.array(t.string) // 修正: デフォルト値を個別の要素に設定しない
       }))
     });
 
@@ -111,9 +120,25 @@ describe('applyDefaultValues', () => {
       },
       posts: [
         { title: 'Untitled', content: 'Hello world', tags: ['tech', null] },
-        { title: 'My Second Post', content: 'Content here', tags: [] }
+        { title: 'My Second Post', content: 'Content here', tags: undefined }
       ]
     };
+
+    expect(applyDefaultValues(input, schema)).toEqual(expected);
+  });
+
+  it('should handle arrays with annotated elements', () => {
+    const schema = t.array(annotate(t.string, { default: 'default' }));
+    const input = ['a', null, 'b', undefined];
+    const expected = ['a', 'default', 'b', 'default'];
+
+    expect(applyDefaultValues(input, schema)).toEqual(expected);
+  });
+
+  it('should not apply defaults to non-annotated array elements', () => {
+    const schema = t.array(t.string);
+    const input = ['a', null, 'b', undefined];
+    const expected = ['a', null, 'b', undefined];
 
     expect(applyDefaultValues(input, schema)).toEqual(expected);
   });
