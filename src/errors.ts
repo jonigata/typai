@@ -74,7 +74,7 @@ ${colors.red('Received value:')} ${colors.gray(formattedValue)}
 `;
 // ${colors.red('Received value:')} ${colors.gray(snugJSON(receivedValue, { maxLength: 60, oneLineLength: 60 }))}
 
-}).join();
+  }).join();
 
   const paths = errors.map(error => getContextPath(error.context).join('.') || '.');
   return { message, paths };
